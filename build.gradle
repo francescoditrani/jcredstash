@@ -1,0 +1,131 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id 'signing'
+    id 'net.researchgate.release' version '2.4.1'
+    id 'com.github.ben-manes.versions' version '0.13.0'
+}
+
+ext {
+    junitVersion = '4.12'
+    awsSdkVersion = '1.11.63'
+    bouncycastleVersion = '1.55'
+    hamcrestVersion = '1.3'
+}
+
+group = 'co.wrisk.dropwizard'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.deprecation = true
+}
+
+compileTestJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.deprecation = true
+}
+
+dependencies {
+    compile "com.amazonaws:aws-java-sdk-kms:$awsSdkVersion"
+    compile "com.amazonaws:aws-java-sdk-dynamodb:$awsSdkVersion"
+    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
+    testCompile "junit:junit:${junitVersion}"
+    testCompile "org.hamcrest:hamcrest-all:${hamcrestVersion}"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    required { !version.contains("SNAPSHOT") }
+    sign configurations.archives
+}
+
+task resolveDependencies {
+    doLast {
+        project.rootProject.allprojects.each { subProject ->
+            subProject.buildscript.configurations.each { configuration ->
+                configuration.resolve()
+            }
+            subProject.configurations.each { configuration ->
+                configuration.resolve()
+            }
+        }
+    }
+}
+
+afterReleaseBuild.dependsOn uploadArchives
+
+uploadArchives {
+
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'JCredStash'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'A pure Java implementation of the CredStash utility originally in Python'
+                url 'https://github.com/WriskHQ/jcredstash'
+
+                scm {
+                    connection 'scm:git:git@github.com:WriskHQ/jcredstash.git'
+                    developerConnection 'scm:git:git@github.com:WriskHQ/jcredstash.git'
+                    url 'https://github.com/WriskHQ/jcredstash'
+                }
+
+                licenses {
+                    license {
+                        name 'Apache Licence'
+                        url 'https://raw.githubusercontent.com/WriskHQ/jcredstash/master/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        name 'Jesse Coyle'
+                        email 'jessecoyle@gmail.com'
+                    }
+
+                    developer {
+                        name 'Alex Harin'
+                        email 'alex@wrisk.co'
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
