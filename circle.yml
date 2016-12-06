@@ -13,5 +13,6 @@ test:
 
 deployment:
   prod:
+    branch: master
     commands:
       - ./gradlew  uploadArchives -x check --console=plain
