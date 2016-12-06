@@ -28,13 +28,18 @@
     </scm>
 
     <properties>
-        <aws.version>1.10.47</aws.version>
+        <aws.version>1.11.60</aws.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-kms</artifactId>
+            <version>${aws.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
             <version>${aws.version}</version>
         </dependency>
         <dependency>

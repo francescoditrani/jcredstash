@@ -1,6 +1,9 @@
 package com.jessecoyle;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.regions.DefaultAwsRegionProviderChain;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.kms.AWSKMSClient;
@@ -23,8 +26,12 @@ public class JCredStash {
     protected CredStashCrypto cryptoImpl;
 
     public JCredStash() {
+        Region region = RegionUtils.getRegion(new DefaultAwsRegionProviderChain().getRegion());
         this.amazonDynamoDBClient = new AmazonDynamoDBClient();
+        this.amazonDynamoDBClient.setRegion(region);
+
         this.awskmsClient = new AWSKMSClient();
+        this.awskmsClient.setRegion(region);
         this.cryptoImpl = new CredStashBouncyCastleCrypto();
     }
 
