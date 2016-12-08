@@ -11,13 +11,15 @@ import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.services.kms.model.DecryptResult;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.jessecoyle.WildcardHelper.credentialNamesMatchingWildcard;
 
-public class JCredStash {
+public class JCredStash implements Closeable {
 
     private static final String DEFAULT_TABLE = "credential-store";
 
@@ -135,4 +137,9 @@ public class JCredStash {
                 .collect(Collectors.toMap(x -> x, x -> getSecret(x, context)));
     }
 
+    @Override
+    public void close() throws IOException {
+        amazonDynamoDBClient.shutdown();
+        awskmsClient.shutdown();
+    }
 }
